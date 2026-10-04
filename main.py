@@ -1,53 +1,66 @@
-user_login = 'Banger'
-user_password = 'Ma4'
-user_pincode = '1654'
-again = 3
-menu_default = '////////////'
+user_login = "demo_user"
+user_password = "demo_password"
+user_pincode = "1234"
 
-while again > 0:
-    login = input("Введите ваш логин: ")
-    password = input('Введите ваш пароль:')
-    pin_code = input("Введите ваш пин-код:")
+max_attempts = 3
+attempts_left = max_attempts
+menu_line = "////////////"
 
-    if login == user_login and password == user_password and pin_code == user_pincode:
+while attempts_left > 0:
+    login = input("Введите логин: ")
+    password = input("Введите пароль: ")
+    pincode = input("Введите PIN-код: ")
 
-        start_menu = True
-        while start_menu:
-            print(menu_default)
-            print("Добро пожаловать ", login, end='!')
-            print(menu_default)
-            print("1 - Калькулятор")
-            print("2 - Счёт от 1 до 10")
-            print("3 - Выход")
+    if login == user_login and password == user_password and pincode == user_pincode:
+        print("Вход выполнен!")
 
-            function = input("Введите одну из функций: ")
+        while True:
+            print(menu_line)
+            print("1 — Калькулятор")
+            print("2 — Счёт от 1 до 10")
+            print("3 — Выход")
 
-            if function == '1':
-                num1 = int(input("Введите первое число: "))
-                num2 = int(input("Введите второе число: "))
+            choice = input("Введите номер опции: ")
 
-                print("Добавление: ",num1 + num2)
-                print("Вычитывание: ",num1 - num2)
-                print("Умножение:",num1 * num2)
-                print("Деление: ", num1 / num2)
-            elif function == '2':
-                for i in range(11):
-                    print(i)
-            elif function == '3':
-                print("До встречи", login, end="!")
-                quit()
+            if choice == "1":
+                num1_text = input("Введите первое число: ")
+                num2_text = input("Введите второе число: ")
+
+                if num1_text.strip() == "" or num2_text.strip() == "":
+                    print("Ты не ввёл число!")
+                else:
+                    try:
+                        num1 = float(num1_text)
+                        num2 = float(num2_text)
+                    except ValueError:
+                        print("Нужно ввести числа.")
+                    else:
+                        print("Сложение:", num1 + num2)
+                        print("Вычитание:", num1 - num2)
+                        print("Умножение:", num1 * num2)
+
+                        if num2 == 0:
+                            print("Делить на 0 нельзя!")
+                        else:
+                            print("Деление:", num1 / num2)
+
+            elif choice == "2":
+                for number in range(1, 11):
+                    print(number)
+
+            elif choice == "3":
+                print("Выход из программы. До встречи!")
+                break
+
             else:
-                print("Error")
+                print("Такой опции нет. Выбери 1, 2 или 3.")
 
-
-
-
-
-
+        break
 
     else:
-        again -= 1
-        print("Неверно , у вас осталось",again, end=' Попытки!\n')
+        attempts_left -= 1
+        print("Неверный логин, пароль или PIN.")
+        print("Осталось попыток:", attempts_left)
 
-        if again == 0:
-            print("Лимит исчерпан!")
+        if attempts_left == 0:
+            print("Попытки закончились.")
