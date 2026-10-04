@@ -1,45 +1,22 @@
-import hashlib
-import hmac
-import json
-import secrets
+import os
 from pathlib import Path
 
-HASH_ITERATIONS = 600_000
-AUTH_FILE = Path(__file__).with_name(".auth.json")
+ENV_FILE = Path(__file__).with_name(".env")
 
+if ENV_FILE.exists():
+    for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            name, separator, value = line.partition("=")
+            if separator:
+                os.environ.setdefault(name.strip(), value.strip())
 
-def hash_credential(value, salt):
-    value_bytes = value.encode("utf-8")
-    return hashlib.pbkdf2_hmac("sha256", value_bytes, salt, HASH_ITERATIONS).hex()
+userlogin = os.getenv("APP_LOGIN")
+user_password = os.getenv("APP_PASSWORD")
+user_pin = os.getenv("APP_PIN")
 
-
-def create_credential_record(value):
-    salt = secrets.token_bytes(16)
-    return {
-        "salt": salt.hex(),
-        "hash": hash_credential(value, salt),
-    }
-
-
-def credential_matches(value, saved_record):
-    salt = bytes.fromhex(saved_record["salt"])
-    value_hash = hash_credential(value, salt)
-    return hmac.compare_digest(value_hash, saved_record["hash"])
-
-
-if AUTH_FILE.exists():
-    with AUTH_FILE.open("r", encoding="utf-8") as auth_file:
-        saved_credentials = json.load(auth_file)
-else:
-    print("Первый запуск: создай данные для входа.")
-    saved_credentials = {
-        "login": create_credential_record(input("Придумай логин: ").strip()),
-        "password": create_credential_record(input("Придумай пароль: ")),
-        "pin": create_credential_record(input("Придумай PIN-код: ")),
-    }
-    with AUTH_FILE.open("w", encoding="utf-8") as auth_file:
-        json.dump(saved_credentials, auth_file, indent=2)
-    print("Данные сохранены в виде хешей.")
+if not userlogin or not user_password or not user_pin:
+    raise SystemExit("Не найдены данные для входа. Создай .env по образцу .env.example.")
 
 max_attempts = 3
 attempts_left = max_attempts
@@ -50,11 +27,7 @@ while attempts_left > 0:
     password = input("Введите пароль: ")
     pincode = input("Введите PIN-код: ")
 
-    login_is_correct = credential_matches(login, saved_credentials["login"])
-    password_is_correct = credential_matches(password, saved_credentials["password"])
-    pin_is_correct = credential_matches(pincode, saved_credentials["pin"])
-
-    if login_is_correct and password_is_correct and pin_is_correct:
+    if login == userlogin and password == user_password and pincode == user_pin:
         while True:
             print(menu_logo)
             print("1 - Калькулятор")
